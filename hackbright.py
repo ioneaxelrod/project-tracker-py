@@ -104,6 +104,36 @@ def assign_grade(github, title, grade):
     print("Successfully added grade: {} {} {}".format(github, title, grade))
 
 
+def add_project(title, description, max_grade):
+    QUERY = """
+        INSERT INTO projects (title, description, max_grade)
+            VALUES (:title, :description, :max_grade)
+            """
+
+    db_cursor = db.session.execute(QUERY, {'title': title,
+                                           'description': description,
+                                           'max_grade': max_grade})
+
+    db.session.commit()
+
+    print("Successfully added project: {} {} {}".format(title, description, max_grade))
+
+
+def get_all_grades_for_student(student_github):
+    QUERY = """
+        SELECT student_github, project_title, grade
+        FROM grades
+        WHERE student_github = :student_github
+        """
+
+    db_cursor = db.session.execute(QUERY, {"student_github": student_github})
+
+    rows = db_cursor.fetchall()
+
+    print(f"Grades for {student_github}")
+    for row in rows:
+        print(f"{row[1]}: {row[2]}")
+
 
 def handle_input():
     """Main loop.
@@ -139,7 +169,17 @@ def handle_input():
         elif command == "assign_grade":
             github, title, grade = args
             assign_grade(github, title, grade)
-          
+
+        elif command == "add_project":
+            title = args[0]
+            description = " ".join(args[1:-1])
+            max_grade = args[-1]
+            add_project(title, description, max_grade)
+
+        elif command == "get_grades":
+            student_github = args[0]
+            get_all_grades_for_student(student_github)
+
         else:
             if command != "quit":
                 print("Invalid Entry. Try again.")
